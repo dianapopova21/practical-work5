@@ -1,0 +1,53 @@
+
+class DiningPhilosophers
+{
+    private static readonly int numberOfPhilosophers = 5;
+    private static readonly object[] forks = new object[numberOfPhilosophers];
+
+    private static void Philosopher(object philosopherNumber)
+    {
+        int number = (int)philosopherNumber;
+        int leftFork = number;
+        int rightFork = (number + 1) % numberOfPhilosophers;
+
+        while (true)
+        {
+            Console.WriteLine($"Філософ {number} думає.");
+            Thread.Sleep(5000);
+
+            lock (forks[leftFork])
+            {
+                Console.WriteLine($"Філософ {number} взяв ліву вилку.");
+
+                lock (forks[rightFork])
+                {
+                    Console.WriteLine($"Філософ {number} взяв праву вилку і почав їсти.");
+
+                    Thread.Sleep(3000);
+
+                    Console.WriteLine($"Філософ {number} закінчив їсти і кладе вилки на місце.");
+
+                }
+                Console.WriteLine($"Філософ {number} поклав ліву вилку на місце.");
+            }
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        for (int i = 0; i < numberOfPhilosophers; i++)
+        {
+            forks[i] = new object();
+        }
+
+        Thread[] philosophers = new Thread[numberOfPhilosophers];
+
+        for (int i = 0; i < numberOfPhilosophers; i++)
+        {
+            philosophers[i] = new Thread(new ParameterizedThreadStart(Philosopher));
+            philosophers[i].Start(i);
+        }
+
+        Console.ReadLine();
+    }
+}
