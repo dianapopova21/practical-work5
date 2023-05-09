@@ -1,0 +1,55 @@
+using System;
+using System.Threading;
+
+class Program
+{
+    static int numberOfPhilosophers = 5;
+    static Semaphore[] forks = new Semaphore[numberOfPhilosophers];
+    static Semaphore maxPhilosophers = new Semaphore(numberOfPhilosophers / 2, numberOfPhilosophers / 2);
+
+    static void Main()
+    {
+        for (int i = 0; i < numberOfPhilosophers; i++)
+        {
+            forks[i] = new Semaphore(1, 1);
+        }
+
+        Thread[] philosophers = new Thread[numberOfPhilosophers];
+        for (int i = 0; i < numberOfPhilosophers; i++)
+        {
+            philosophers[i] = new Thread(new ParameterizedThreadStart(Philosopher));
+            philosophers[i].Start(i);
+        }
+
+        Console.ReadLine();
+    }
+
+    static void Philosopher(object philosopherNumber)
+    {
+        int number = (int)philosopherNumber;
+
+        while (true)
+        {
+            Console.WriteLine($"Філософ {number} думає.");
+            Thread.Sleep(5000);
+
+            maxPhilosophers.WaitOne();
+
+            Console.WriteLine($"Філософ {number} сів за стіл.");
+
+            forks[number].WaitOne();
+            forks[(number + 1) % numberOfPhilosophers].WaitOne();
+
+            Console.WriteLine($"Філософ {number} почав їсти.");
+
+            Thread.Sleep(3000);
+
+            forks[number].Release();
+            forks[(number + 1) % numberOfPhilosophers].Release();
+
+            maxPhilosophers.Release();
+
+            Console.WriteLine($"Філософ {number} закінчив їсти.");
+        }
+    }
+}
